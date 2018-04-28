@@ -33,6 +33,7 @@ public class NNDescent<T> extends DistributedGraphBuilder<T> {
 
     private final Logger logger = LoggerFactory.getLogger(NNDescent.class);
     private int max_iterations = 10;
+    private PairFlatMapFunction<Node<T>, Integer, Node<T>> randomizeFunction = new RandomizeFunction<T>();
 
     /**
      * Set the maximum number of iterations.
@@ -50,6 +51,10 @@ public class NNDescent<T> extends DistributedGraphBuilder<T> {
         return this;
     }
 
+    public void setRandomizeFunction(PairFlatMapFunction<Node<T>, Integer, Node<T>> randomizeFunction) {
+        this.randomizeFunction = randomizeFunction;
+    }
+
     /**
      *
      * @param nodes
@@ -59,8 +64,7 @@ public class NNDescent<T> extends DistributedGraphBuilder<T> {
             final JavaRDD<Node<T>> nodes) {
 
         // Randomize: associate each node to 10 buckets out of 20
-        JavaPairRDD<Integer, Node<T>> randomized = nodes.flatMapToPair(
-                new RandomizeFunction<T>());
+        JavaPairRDD<Integer, Node<T>> randomized = nodes.flatMapToPair(this.randomizeFunction);
 
         // Inside bucket, for each node create a random neighborlist
         JavaPairRDD<Node<T>, NeighborList> random_nl =
